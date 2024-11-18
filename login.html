@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintrack Pro - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --light-text-color: #bdc3c7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            overflow: hidden;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 30px 0;
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .logo i {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: var(--primary-color);
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            color: var(--light-text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background-color: #ffffff;
+            color: var(--primary-color);
+        }
+
+        .form {
+            padding: 30px;
+        }
+
+        .form h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: 300;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-bottom: 2px solid var(--light-text-color);
+            background-color: transparent;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-bottom-color: var(--secondary-color);
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            font-size: 16px;
+            color: var(--light-text-color);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label,
+        .form-group select:focus + label,
+        .form-group select:not(:placeholder-shown) + label {
+            top: -10px;
+            left: 0;
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-container input {
+            margin-right: 10px;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--secondary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .google-signup {
+            background-color: var(--accent-color);
+            margin-top: 10px;
+        }
+
+        .google-signup:hover {
+            background-color: #c0392b;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--light-text-color);
+        }
+
+        .form-footer a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <h1>Fintrack Pro</h1>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="showForm('login')">Login</div>
+            <div class="tab" onclick="showForm('signup')">Sign Up</div>
+        </div>
+        <div class="form" id="loginForm">
+            <h2>Welcome Back</h2>
+            <div class="form-group">
+                <input type="email" id="loginEmail" required placeholder=" ">
+                <label for="loginEmail">Email</label>
+            </div>
+            <div class="form-group">
+                <input type="password" id="loginPassword" required placeholder=" ">
+                <label for="loginPassword">Password</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Remember me</label>
+            </div>
+            <div class="forgot-password">
+                <a href="#" onclick="forgotPassword()">Forgot Password?</a>
+            </div>
+            <button onclick="login()">Login</button>
+            <div class="form-footer">
+                Don't have an account? <a href="#" onclick="showForm('signup')">Sign up</a>
+            </div>
+        </div>
+        <div class="form" id="signupForm" style="display: none;">
+            <h2>Create Account</h2>
+            <div class="form-group">
+                <input type="text" id="firstName" required placeholder=" ">
+                <label for="firstName">First Name</label>
+            </div>
+            <div class="form-group">
+                <input type="text" id="lastName" required placeholder=" ">
+                <label for="lastName">Last Name</label>
+            </div>
+            <div class="form-group">
+                <input type="email" id="signupEmail" required placeholder=" ">
+                <label for="signupEmail">Email</label>
+            </div>
+            <div class="form-group">
+                <input type="tel" id="phoneNumber" required placeholder=" ">
+                <label for="phoneNumber">Phone Number</label>
+            </div>
+            <div class="form-group">
+                <select id="currency" required>
+                    <option value="" disabled selected></option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="KES">KES</option>
+                </select>
+                <label for="currency">Select Currency</label>
+            </div>
+            <div class="form-group">
+                <input type="password" id="signupPassword" required placeholder=" ">
+                <label for="signupPassword">Password</label>
+            </div>
+            <div class="form-group">
+                <input type="password" id="confirmPassword" required placeholder=" ">
+                <label for="confirmPassword">Confirm Password</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="agreeTerms" required>
+                <label for="agreeTerms">I agree to the Terms and Conditions</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="agreePrivacy" required>
+                <label for="agreePrivacy">I agree to the Privacy Policy</label>
+            </div>
+            <button onclick="signup()">Sign Up</button>
+            <button onclick="signupWithGoogle()" class="google-signup">
+                <i class="fab fa-google"></i> Sign up with Google
+            </button>
+            <div class="form-footer">
+                Already have an account? <a href="#" onclick="showForm('login')">Log in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showForm(formType) {
+            document.getElementById('loginForm').style.display = formType === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = formType === 'signup' ? 'block' : 'none';
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function login() {
+            // Add login logic here
+            alert('Login functionality to be implemented');
+            // window.location.href = 'dashboard.html';
+        }
+
+        function signup() {
+            // Add signup logic here
+            alert('Signup functionality to be implemented');
+            // window.location.href = 'dashboard.html';
+        }
+
+        function forgotPassword() {
+            // Add forgot password logic here
+            alert('Forgot password functionality to be implemented');
+        }
+
+        function signupWithGoogle() {
+            // Add Google signup logic here
+            alert('Google signup functionality to be implemented');
+        }
+    </script>
+</body>
+</html>
