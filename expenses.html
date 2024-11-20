@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintrack Pro - Expenses</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --card-background: #ffffff;
+            --text-color: #34495e;
+            --light-text-color: #7f8c8d;
+            --border-color: #bdc3c7;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --menu-width: 250px;
+            --menu-collapsed-width: 60px;
+            --header-height: 60px;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
+        }
+
+        .dark-mode {
+            --primary-color: #34495e;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #2c3e50;
+            --card-background: #34495e;
+            --text-color: #ecf0f1;
+            --light-text-color: #bdc3c7;
+            --border-color: #7f8c8d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .menu {
+            width: var(--menu-width);
+            background-color: var(--primary-color);
+            color: var(--card-background);
+            transition: width var(--transition-speed) ease;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            overflow-x: hidden;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu.collapsed {
+            width: var(--menu-collapsed-width);
+        }
+
+        .menu-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            transition: padding var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-header {
+            padding: 20px 0;
+        }
+
+        .menu-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: font-size var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-header h2 {
+            font-size: 0;
+        }
+
+        .menu-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-size: 16px;
+            text-decoration: none;
+            color: var(--card-background);
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item span {
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity var(--transition-speed);
+        }
+
+        .menu.collapsed .menu-item span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .menu-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            transition: padding var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-footer {
+            padding: 20px 0;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            margin-left: var(--menu-width);
+            transition: margin-left var(--transition-speed) ease;
+            padding: 20px;
+        }
+
+        .menu.collapsed + .main-content {
+            margin-left: var(--menu-collapsed-width);
+        }
+
+        .header {
+            background-color: var(--card-background);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background-color var(--transition-speed);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dark-mode-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .expense-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            transition: border-color var(--transition-speed);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .button {
+            padding: 12px 20px;
+            background-color: var(--secondary-color);
+            color: var(--card-background);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+
+        .button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .expense-list {
+            list-style-type: none;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color var(--transition-speed);
+        }
+
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        .expense-item:hover {
+            background-color: var(--background-color);
+        }
+
+        .expense-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .expense-category {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .expense-date {
+            font-size: 14px;
+            color: var(--light-text-color);
+        }
+
+        .expense-amount {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-form input {
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .menu {
+                width: var(--menu-collapsed-width);
+            }
+
+            .menu-item span {
+                opacity: 0;
+                width: 0;
+                overflow: hidden;
+            }
+
+            .main-content {
+                margin-left: var(--menu-collapsed-width);
+            }
+
+            .menu-header h2 {
+                font-size: 0;
+            }
+
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-form input,
+            .search-form button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                height: auto;
+                padding: 16px;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="menu">
+        <div class="menu-header">
+            <h2>Fintrack Pro</h2>
+        </div>
+        <div class="menu-items">
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-chart-line"></i><span>Dashboard</span>
+            </a>
+            <a href="analytics.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i><span>Analytics</span>
+            </a>
+            <a href="transactions.html" class="menu-item">
+                <i class="fas fa-exchange-alt"></i><span>Transactions</span>
+            </a>
+            <a href="budget.html" class="menu-item">
+                <i class="fas fa-wallet"></i><span>Budget</span>
+            </a>
+            <a href="expenses.html" class="menu-item">
+                <i class="fas fa-receipt"></i><span>Expenses</span>
+            </a>
+            <a href="savings.html" class="menu-item">
+                <i class="fas fa-piggy-bank"></i><span>Savings</span>
+            </a>
+            <a href="news.html" class="menu-item">
+                <i class="fas fa-newspaper"></i><span>News</span>
+            </a>
+            <a href="tax.html" class="menu-item">
+                <i class="fas fa-file-invoice-dollar"></i><span>Tax</span>
+            </a>
+            <a href="shop.html" class="menu-item">
+                <i class="fas fa-shopping-cart"></i><span>Shop</span>
+            </a>
+            <a href="settings.html" class="menu-item">
+                <i class="fas fa-cog"></i><span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="menu-footer">
+            <a href="#" class="menu-item"><i class="fas fa-file-contract"></i><span>Terms & Conditions</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-user-shield"></i><span>Privacy Policy</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-envelope"></i><span>Contact Us</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+        </div>
+    </nav>
+    <div class="main-content">
+        <header class="header">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="header-right">
+                <div class="dark-mode-toggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="card">
+                <h2>Expense Tracker</h2>
+                <form class="expense-form" id="expenseForm">
+                    <div class="form-group">
+                        <label for="expenseCategory">Category</label>
+                        <select id="expenseCategory" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="food">Food</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseAmount">Amount</label>
+                        <input type="number" id="expenseAmount" name="amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDate">Date</label>
+                        <input type="date" id="expenseDate" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDescription">Description</label>
+                        <input type="text" id="expenseDescription" name="description" required>
+                    </div>
+                    <button type="submit" class="button">Add Expense</button>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Expense List</h2>
+                <form class="search-form" id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Search expenses...">
+                    <button type="submit" class="button">Search</button>
+                </form>
+                <ul class="expense-list" id="expenseList">
+                    <!-- Expenses will be dynamically added here -->
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Menu toggle functionality
+        const menuToggle = document.querySelector('.menu-toggle');
+        const menu = document.querySelector('.menu');
+        const mainContent = document.querySelector('.main-content');
+
+        menuToggle.addEventListener('click', () => {
+            menu.classList.toggle('collapsed');
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.querySelector('.dark-mode-toggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        // Expense form submission
+        const expenseForm = document.getElementById('expenseForm');
+        const expenseList = document.getElementById('expenseList');
+
+        expenseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(expenseForm);
+            const expense = Object.fromEntries(formData.entries());
+            addExpenseToList(expense);
+            expenseForm.reset();
+        });
+
+        function addExpenseToList(expense) {
+            const li = document.createElement('li');
+            li.className = 'expense-item';
+            li.innerHTML = `
+                <div class="expense-details">
+                    <span class="expense-category">${expense.category}</span>
+                    <span class="expense-description">${expense.description}</span>
+                    <span class="expense-date">${expense.date}</span>
+                </div>
+                <span class="expense-amount">$${parseFloat(expense.amount).toFixed(2)}</span>
+            `;
+            expenseList.insertBefore(li, expenseList.firstChild);
+        }
+
+        // Sample expenses
+        const sampleExpenses = [
+            { category: 'Food', amount: 25.50, date: '2023-05-15', description: 'Lunch with colleagues' },
+            { category: 'Transportation', amount: 30.00, date: '2023-05-14', description: 'Uber ride' },
+            { category: 'Utilities', amount: 80.00, date: '2023-05-10', description: 'Electricity bill' },
+            { category: 'Entertainment', amount: 15.00, date: '2023-05-08', description: 'Movie ticket' },
+            { category: 'Other', amount: 50.00, date: '2023-05-05', description: 'Gift for friend' }
+        ];
+
+        // Add sample expenses to the list
+        sampleExpenses.forEach(expense => addExpenseToList(expense));
+
+        // Search functionality
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = searchInput.value.toLowerCase();
+            const expenseItems = expenseList.querySelectorAll('.expense-item');
+
+            expenseItems.forEach(item => {
+                const expenseText = item.textContent.toLowerCase();
+                if (expenseText.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
