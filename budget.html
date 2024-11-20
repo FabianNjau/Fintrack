@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintrack Pro - Budget Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --card-background: #ffffff;
+            --text-color: #34495e;
+            --light-text-color: #7f8c8d;
+            --border-color: #bdc3c7;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --menu-width: 250px;
+            --menu-collapsed-width: 60px;
+            --header-height: 60px;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
+        }
+
+        .dark-mode {
+            --primary-color: #34495e;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #2c3e50;
+            --card-background: #34495e;
+            --text-color: #ecf0f1;
+            --light-text-color: #bdc3c7;
+            --border-color: #7f8c8d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .menu {
+            width: var(--menu-width);
+            background-color: var(--primary-color);
+            color: var(--card-background);
+            transition: width var(--transition-speed) ease;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            overflow-x: hidden;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu.collapsed {
+            width: var(--menu-collapsed-width);
+        }
+
+        .menu-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            transition: padding var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-header {
+            padding: 20px 0;
+        }
+
+        .menu-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: font-size var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-header h2 {
+            font-size: 0;
+        }
+
+        .menu-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-size: 16px;
+            text-decoration: none;
+            color: var(--card-background);
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-item span {
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity var(--transition-speed);
+        }
+
+        .menu.collapsed .menu-item span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .menu-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            transition: padding var(--transition-speed) ease;
+        }
+
+        .menu.collapsed .menu-footer {
+            padding: 20px 0;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            margin-left: var(--menu-width);
+            transition: margin-left var(--transition-speed) ease;
+            padding: 20px;
+        }
+
+        .menu.collapsed + .main-content {
+            margin-left: var(--menu-collapsed-width);
+        }
+
+        .header {
+            background-color: var(--card-background);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background-color var(--transition-speed);
+        }
+
+        .menu-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dark-mode-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .budget-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            transition: border-color var(--transition-speed);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .button {
+            padding: 12px 20px;
+            background-color: var(--secondary-color);
+            color: var(--card-background);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+
+        .button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .budget-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .budget-summary-item {
+            text-align: center;
+            background-color: var(--background-color);
+            padding: 16px;
+            border-radius: 8px;
+            transition: transform var(--transition-speed);
+        }
+
+        .budget-summary-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .budget-summary-item h3 {
+            font-size: 18px;
+            color: var(--light-text-color);
+            margin-bottom: 8px;
+        }
+
+        .budget-summary-item .amount {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-bottom: 24px;
+        }
+
+        .budget-templates {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .budget-template {
+            padding: 12px 20px;
+            background-color: var(--secondary-color);
+            color: var(--card-background);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+
+        .budget-template:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: var(--light-text-color);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--text-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .menu {
+                width: var(--menu-collapsed-width);
+            }
+
+            .menu-item span {
+                opacity: 0;
+                width: 0;
+                overflow: hidden;
+            }
+
+            .main-content {
+                margin-left: var(--menu-collapsed-width);
+            }
+
+            .menu-header h2 {
+                font-size: 0;
+            }
+
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .budget-summary {
+                flex-wrap: wrap;
+            }
+
+            .budget-summary-item {
+                width: calc(50% - 12px);
+                margin-bottom: 16px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .budget-templates {
+                flex-wrap: wrap;
+            }
+
+            .budget-template {
+                width: calc(50% - 8px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                height: auto;
+                padding: 16px;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 16px;
+            }
+
+            .budget-summary-item {
+                width: 100%;
+            }
+
+            .chart-container {
+                height: 200px;
+            }
+
+            .budget-template {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="menu">
+        <div class="menu-header">
+            <h2>Fintrack Pro</h2>
+        </div>
+        <div class="menu-items">
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-chart-line"></i><span>Dashboard</span>
+            </a>
+            <a href="analytics.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i><span>Analytics</span>
+            </a>
+            <a href="transactions.html" class="menu-item">
+                <i class="fas fa-exchange-alt"></i><span>Transactions</span>
+            </a>
+            <a href="budget.html" class="menu-item">
+                <i class="fas fa-wallet"></i><span>Budget</span>
+            </a>
+            <a href="expenses.html" class="menu-item">
+                <i class="fas fa-receipt"></i><span>Expenses</span>
+            </a>
+            <a href="savings.html" class="menu-item">
+                <i class="fas fa-piggy-bank"></i><span>Savings</span>
+            </a>
+            <a href="news.html" class="menu-item">
+                <i class="fas fa-newspaper"></i><span>News</span>
+            </a>
+            <a href="tax.html" class="menu-item">
+                <i class="fas fa-file-invoice-dollar"></i><span>Tax</span>
+            </a>
+            <a href="shop.html" class="menu-item">
+                <i class="fas fa-shopping-cart"></i><span>Shop</span>
+            </a>
+            <a href="settings.html" class="menu-item">
+                <i class="fas fa-cog"></i><span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="menu-footer">
+            <a href="#" class="menu-item"><i class="fas fa-file-contract"></i><span>Terms & Conditions</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-user-shield"></i><span>Privacy Policy</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-envelope"></i><span>Contact Us</span></a>
+            <a href="#" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+        </div>
+    </nav>
+    <div class="main-content">
+        <header class="header">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="header-right">
+                <div class="dark-mode-toggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="card">
+                <h2>Budget Creation Tool</h2>
+                <div class="budget-templates">
+                    <button class="budget-template" data-template="student">Student Budget</button>
+                    <button class="budget-template" data-template="household">Household Budget</button>
+                    <button class="budget-template" data-template="custom">Custom Budget</button>
+                </div>
+                <form class="budget-form" id="budgetForm">
+                    <div class="form-group">
+                        <label for="income">Monthly Income</label>
+                        <input type="number" id="income" name="income" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalBudget">Total Budget</label>
+                        <input type="number" id="totalBudget" name="totalBudget" required>
+                    </div>
+                    <div id="categoryInputs">
+                        <!-- Category inputs will be dynamically added here -->
+                    </div>
+                    <button type="button" class="button" id="addCategoryBtn">Add Category</button>
+                    <button type="submit" class="button">Create Budget</button>
+                </form>
+                <div class="budget-summary">
+                    <div class="budget-summary-item">
+                        <h3>Total Budget</h3>
+                        <div class="amount" id="totalBudgetAmount">$0.00</div>
+                    </div>
+                    <div class="budget-summary-item">
+                        <h3>Allocated</h3>
+                        <div class="amount" id="allocatedAmount">$0.00</div>
+                    </div>
+                    <div class="budget-summary-item">
+                        <h3>Remaining</h3>
+                        <div class="amount" id="remainingAmount">$0.00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Budget Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Savings Goal Tracker</h2>
+                <form id="savingsGoalForm">
+                    <div class="form-group">
+                        <label for="savingsGoal">Monthly Savings Goal</label>
+                        <input type="number" id="savingsGoal" name="savingsGoal" required>
+                    </div>
+                    <button type="submit" class="button">Set Goal</button>
+                </form>
+                <div class="savings-goal">
+                    <span>Progress:</span>
+                    <div class="savings-goal-progress">
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="savingsProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <span id="savingsProgressText">0%</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add Category</h2>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label for="categoryName">Category Name</label>
+                    <input type="text" id="categoryName" name="categoryName" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryAllocation">Allocation</label>
+                    <input type="number" id="categoryAllocation" name="categoryAllocation" required>
+                </div>
+                <button type="submit" class="button">Add Category</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Menu toggle functionality
+        const menuToggle = document.querySelector('.menu-toggle');
+        const menu = document.querySelector('.menu');
+        const mainContent = document.querySelector('.main-content');
+
+        menuToggle.addEventListener('click', () => {
+            menu.classList.toggle('collapsed');
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.querySelector('.dark-mode-toggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        // Budget creation
+        const budgetForm = document.getElementById('budgetForm');
+        const categoryInputs = document.getElementById('categoryInputs');
+        const addCategoryBtn = document.getElementById('addCategoryBtn');
+        const totalBudgetAmount = document.getElementById('totalBudgetAmount');
+        const allocatedAmount = document.getElementById('allocatedAmount');
+        const remainingAmount = document.getElementById('remainingAmount');
+
+        let categories = [];
+
+        // Category modal
+        const categoryModal = document.getElementById('categoryModal');
+        const categoryForm = document.getElementById('categoryForm');
+        const closeBtn = categoryModal.querySelector('.close');
+
+        addCategoryBtn.addEventListener('click', () => {
+            categoryModal.style.display = 'block';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            categoryModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === categoryModal) {
+                categoryModal.style.display = 'none';
+            }
+        });
+
+        categoryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const categoryName = document.getElementById('categoryName').value;
+            const categoryAllocation = parseFloat(document.getElementById('categoryAllocation').value);
+
+            addCategoryToForm(categoryName, categoryAllocation);
+            categoryModal.style.display = 'none';
+            categoryForm.reset();
+        });
+
+        function addCategoryToForm(name, allocation) {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'form-group';
+            categoryDiv.innerHTML = `
+                <label for="category${categories.length}">${name}</label>
+                <input type="number" id="category${categories.length}" name="category${categories.length}" value="${allocation}" required>
+            `;
+            categoryInputs.appendChild(categoryDiv);
+            categories.push({ name, allocation });
+            updateBudgetSummary();
+        }
+
+        budgetForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(budgetForm);
+            const income = parseFloat(formData.get('income'));
+            const totalBudget = parseFloat(formData.get('totalBudget'));
+
+            categories = [];
+            let allocated = 0;
+
+            for (let i = 0; formData.get(`category${i}`); i++) {
+                const name = document.querySelector(`label[for="category${i}"]`).textContent;
+                const allocation = parseFloat(formData.get(`category${i}`));
+                categories.push({ name, allocation });
+                allocated += allocation;
+            }
+
+            updateBudgetSummary();
+            updateBudgetChart();
+        });
+
+        function updateBudgetSummary() {
+            const totalBudget = parseFloat(document.getElementById('totalBudget').value) || 0;
+            const allocated = categories.reduce((sum, cat) => sum + cat.allocation, 0);
+            const remaining = totalBudget - allocated;
+
+            totalBudgetAmount.textContent = `$${totalBudget.toFixed(2)}`;
+            allocatedAmount.textContent = `$${allocated.toFixed(2)}`;
+            remainingAmount.textContent = `$${remaining.toFixed(2)}`;
+        }
+
+        // Budget chart
+        let budgetChart;
+
+        function updateBudgetChart() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            const data = {
+                labels: categories.map(cat => cat.name),
+                datasets: [{
+                    data: categories.map(cat => cat.allocation),
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                        '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+                    ]
+                }]
+            };
+
+            if (budgetChart) {
+                budgetChart.data = data;
+                budgetChart.update();
+            } else {
+                budgetChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Budget Distribution'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Savings goal tracker
+        const savingsGoalForm = document.getElementById('savingsGoalForm');
+        const savingsProgressBar = document.getElementById('savingsProgressBar');
+        const savingsProgressText = document.getElementById('savingsProgressText');
+
+        let savingsGoal = 0;
+        let currentSavings = 0;
+
+        savingsGoalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(savingsGoalForm);
+            savingsGoal = parseFloat(formData.get('savingsGoal'));
+            updateSavingsProgress();
+        });
+
+        function updateSavingsProgress() {
+            const progress = (currentSavings / savingsGoal) * 100;
+            savingsProgressBar.style.width = `${progress}%`;
+            savingsProgressText.textContent = `${progress.toFixed(2)}%`;
+
+            if (progress >= 100) {
+                showMotivationalMessage("Congratulations! You've reached your savings goal!");
+            }
+        }
+
+        function showMotivationalMessage(message) {
+            alert(message);
+        }
+
+        // Budget templates
+        const budgetTemplates = document.querySelectorAll('.budget-template');
+        budgetTemplates.forEach(template => {
+            template.addEventListener('click', () => {
+                const templateType = template.dataset.template;
+                applyBudgetTemplate(templateType);
+            });
+        });
+
+        function applyBudgetTemplate(templateType) {
+            let templateCategories = [];
+            switch (templateType) {
+                case 'student':
+                    templateCategories = [
+                        { name: 'Tuition', allocation: 1000 },
+                        { name: 'Rent', allocation: 500 },
+                        { name: 'Food', allocation: 300 },
+                        { name: 'Books', allocation: 200 },
+                        { name: 'Transportation', allocation: 100 },
+                        { name: 'Entertainment', allocation: 100 }
+                    ];
+                    break;
+                case 'household':
+                    templateCategories = [
+                        { name: 'Mortgage/Rent', allocation: 1500 },
+                        { name: 'Utilities', allocation: 300 },
+                        { name: 'Groceries', allocation: 600 },
+                        { name: 'Transportation', allocation: 400 },
+                        { name: 'Insurance', allocation: 200 },
+                        { name: 'Savings', allocation: 500 },
+                        { name: 'Entertainment', allocation: 300 }
+                    ];
+                    break;
+                case 'custom':
+                    // Clear existing categories for custom template
+                    templateCategories = [];
+                    break;
+            }
+
+            // Clear existing category inputs
+            categoryInputs.innerHTML = '';
+            categories = [];
+
+            // Add new category inputs based on the template
+            templateCategories.forEach(cat => {
+                addCategoryToForm(cat.name, cat.allocation);
+            });
+
+            // Update total budget
+            const totalBudget = templateCategories.reduce((sum, cat) => sum + cat.allocation, 0);
+            document.getElementById('totalBudget').value = totalBudget;
+
+            updateBudgetSummary();
+            updateBudgetChart();
+        }
+    </script>
+</body>
+</html>
